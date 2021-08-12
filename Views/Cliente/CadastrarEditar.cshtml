@@ -1,0 +1,122 @@
+@using System.Globalization
+@model standBY_prototype.Models.Cliente
+
+<h1>Novo cliente</h1>
+<form id="novo-cliente_form" method="POST">
+  @if (Model != null)
+  {
+    <input name="id" type="hidden" value="@Model.Id" />
+  }
+  <div class="form-group has-error">
+    <label for="razaoSocial">Razão social</label>
+    @if (Model != null)
+    {
+      <input id="razaoSocial" class="form-control" name="razaoSocial" type="text" placeholder="Empresa S/A"
+      value="@Model.razao_social" required />
+    }
+    else
+    {
+      <input id="razaoSocial" class="form-control" name="razaoSocial" type="text" placeholder="Empresa S/A" required />
+    }
+  </div>
+  <div class="form-group">
+    <label for="cnpj">CNPJ</label>
+    @if (Model != null)
+    {
+      <input id="cnpj" name="cnpj" type="text" class="form-control" placeholder="00.000.000/0000-00" value="@Model.cnpj"
+      required minlength="18" maxlength="18" />
+    }
+    else
+    {
+      <input id="cnpj" name="cnpj" type="text" class="form-control" placeholder="00.000.000/0000-00" required
+      minlength="18" maxlength="18" />
+    }
+  </div>
+  <div class="form-group">
+    <label for="data-fundacao">Data de fundação</label>
+    <div class="input-group date" id="datetimepicker">
+      @if (Model != null)
+      {
+        <input id="data-fundacao" class="form-control" name="dataFundacao" type="text" placeholder="DD/MM/YYYY"
+        value='@Model.data_fundacao.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);' required />
+      }
+      else
+      {
+        <input id="data-fundacao" class="form-control" name="dataFundacao" type="text" placeholder="DD/MM/YYYY"
+        required />
+      }
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="capital">Capital R$</label>
+    @if (Model != null)
+    {
+      <input id="capital" class="form-control" name="capital" type="text" placeholder="0,00" value="@Model.capital"
+      required />
+    }
+    else
+    {
+      <input id="capital" class="form-control" name="capital" type="text" placeholder="0,00" required />
+    }
+  </div>
+  <div class="form-group checkbox col-lg-2 col-12">
+    <label for="status">
+      @if (Model != null && Model.status_cliente)
+      {
+        <input id="status" name="status" type="checkbox" checked />
+      }
+      else
+      {
+        <input id="status" name="status" type="checkbox" />
+      }
+      &nbsp;Ativo
+    </label>
+  </div>
+
+  <div class="row">
+    <button class="btn btn-default col-md-2" type="button"
+      onclick="location.href='@Url.Action("Index")'">Cancelar</button>
+    <button class="btn btn-primary col-md-2" type="submit">Salvar</button>
+  </div>
+</form>
+
+@section Scripts
+{
+<script src="~/lib/jquery-mask/dist/jquery.mask.min.js"></script>
+<script>
+  $('document').ready(function () {
+    const capital = $('#capital')
+    const razaoSocialInput = $('#razaoSocial')
+    const dataFundacao = $('#data-fundacao')
+
+    $('#cnpj').mask('00.000.000/0000-00')
+    $('#data-fundacao').mask('00/00/0000')
+
+    dataFundacao.datetimepicker({ format: 'DD/MM/yyyy' })
+    capital.mask('#.##0,00', { reverse: true })
+
+    razaoSocialInput.on('change', function (event) {
+      if (event.target.value === 0) {
+        razaoSocialInput.parent().addClass('has-error')
+      }
+      else {
+        razaoSocialInput.parent().removeClass('has-error')
+      }
+    })
+
+    const form = $('#novo-cliente_form')
+    form.on('submit', function () {
+      const status = $('#status')
+      status.val(status.is(':checked'))
+      capital.unmask()
+      let value = capital.val()
+      value = value != '' && value != null && value.length > 2
+        ? `${value.substring(0, value.length - 2)}.${value.substring(value.length - 2, value.length)}`
+        : value <= 2
+          ? `0.${value}`
+          : '0'
+      capital.val(value)
+    })
+  })
+</script>
+}

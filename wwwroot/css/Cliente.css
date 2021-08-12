@@ -1,0 +1,42 @@
+.cliente__header-section {
+	display: flex;
+	justify-content: space-between;
+
+	margin-bottom: 1rem;
+}
+
+.cliente__form-section {
+	padding: 2rem;
+	border-radius: 5px;
+
+	outline: solid 1px #ddd;
+}
+
+.cliente__table-section {
+	margin-top: 1rem;
+}
+
+.cliente__table_data_fundacao,
+.cliente__table_status {
+	text-align: center;
+}
+
+.cliente__table_capital {
+	display: flex;
+	justify-content: space-between;
+}
+
+.cliente__table_acao {
+	display: flex;
+	justify-content: space-around;
+}
+
+.cliente__table_acao > a {
+	color: black;
+	text-decoration: none;
+}
+
+.cliente__table_acao > a:hover {
+	color: black;
+	text-decoration: none;
+}

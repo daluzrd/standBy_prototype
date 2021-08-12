@@ -1,0 +1,293 @@
+@using System.Text.RegularExpressions
+@using System.Globalization
+@model IEnumerable<standBY_prototype.Models.Cliente>
+
+@{
+  ViewData["Title"] = "Client";
+
+  string[] tableTitles = { "Razão Social", "CNPJ", "Data de Fundação", "Capital", "Status", "Ação" };
+}
+<style>
+</style>
+
+<section class="container">
+  <section class="cliente__header-section">
+    <h4>Cliente</h4>
+    <button class="btn btn-primary btn-xs" type="button"
+      onclick="location.href='@Url.Action("CadastrarEditar")'">Cadastrar</button>
+  </section>
+
+  <section class="cliente__form-section">
+    <div class="col-md-12">
+      <h6>Empresa</h6>
+    </div>
+    <form id="buscar-form" class="form-inline">
+      <div class="form-group col-lg-4">
+        <label class="col-lg-4 col-12" for="razaoSocial">Razão Social&nbsp;</label>
+        <input class="form-control col-lg-8 col-12" id="razaoSocial" name="razaoSocial" type="text"
+          placeholder="Razão Social S/A" />
+      </div>
+
+      <div class="form-group col-lg-4">
+        <label class="col-lg-2 col-12" for="cnpj">CNPJ&nbsp;</label>
+        <input class="form-control col-lg-10 col-12" id="cnpj" name="cnpj" type="text" placeholder="00.000.000/0000-00">
+      </div>
+
+      <div class="checkbox col-lg-2 col-12">
+        <label for="status">
+          <input id="status" name="status" type="checkbox" />&nbsp;Ativo
+        </label>
+      </div>
+
+      <button id="botao-buscar" class="btn btn-primary col-lg-2 col-md-12" type="submit">Buscar</button>
+
+      <div id="loading" class="col-lg-2 removed">
+        <div class="spinner-border">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+
+    </form>
+  </section>
+  <section class="cliente__table-section">
+    <h6>Clientes</h6>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover">
+        <thead>
+          <tr>
+            @{
+              foreach (var title in tableTitles)
+              {
+                <th>@title</th>
+              }
+            }
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          @foreach (var item in Model)
+          {
+            <tr>
+              <td>
+                @item.razao_social
+              </td>
+              <td>
+                @Regex.Replace(item.cnpj, @"^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*", "$1.$2.$3/$4-$5")
+                @* ${cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5')} *@
+              </td>
+              <td class="cliente__table_data_fundacao">
+                @item.data_fundacao.ToString("dd/MM/yyyy")
+              </td>
+              <td>
+                <div class="cliente__table_capital">
+                  <span>R$</span><span>@item.capital.ToString("N2", CultureInfo.GetCultureInfo("pt-BR"))</span>
+                </div>
+              </td>
+              @if (item.status_cliente)
+              {
+                <td class="cliente__table_status">
+                  Ativo
+                </td>
+              }
+              else
+              {
+                <td class="cliente__table_status">
+                  Inativo
+                </td>
+              }
+              <td class="cliente__table_acao">
+                <div class="row button-group">
+                  <div class="col-md-6">
+                    <button class="btn btn-xs" type="button"
+                    onclick="location.href='@Url.Action("CadastrarEditar", new {id = item.Id})'">
+                      <span class="material-icons">edit</span>
+                    </button>
+                  </div>
+                  <div class="col-md-6" onclick="getClienteById(@item.Id)">
+                    <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#modal">
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (Model.Count() > 0)
+    {
+      <p id="no-results" class="removed">
+        Sem resultados...
+      </p>
+    }
+    else
+    {
+      <p id="no-results">
+        Sem resultados...
+      </p>
+    }
+  </section>
+</section>
+
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Excluir registro</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span
+            aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <h6>Tem certeza que deseja excluir este registro?</h6>
+        <div id="modal-body-content"></div>
+      </div>
+      <div id="modal-footer" class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts
+{
+<script src="~/lib/jquery-mask/dist/jquery.mask.min.js"></script>
+
+<script>
+  function deleteCliente(id) {
+    $.ajax({
+      url: `/Cliente/Delete/${id}`,
+      type: 'POST',
+      contentType: 'application/json',
+      success: function () {
+        location.reload()
+      },
+      error: function () {
+        alert('Erro ao excluir registro.')
+      }
+    })
+  }
+
+  function getClienteById(id) {
+    const modalBodyContent = $('#modal-body-content');
+    const modalFooter = $('#modal-footer')
+    modalBodyContent.empty()
+    modalFooter.empty()
+
+    $.ajax({
+      url: `/Cliente/GetClienteById/${id}`,
+      type: 'GET',
+      contentType: 'application/json',
+      success: function (cliente) {
+        modalBodyContent.html(`
+            <p>Razão social: ${cliente.razao_social}</p>
+            <p>Cnpj: ${cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5')}</p>
+            <p>Data de fundação: ${moment(cliente.data_fundacao).format('DD/MM/YYYY')}</p>
+            <p>Capital: ${cliente.capital.toFixed(2).toString().replace('.', ',').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</p>
+            <p>Status: ${cliente.status_cliente ? 'Ativo' : 'Inativo'}</p>
+          `)
+        modalFooter.html(`          
+            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            <button id="button-delete-confirm" type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteCliente(${cliente.id})">Excluir</button>
+          `)
+      },
+      error: function (data) {
+        modalBodyContent.html(`
+            <p>Não foi possível recuperar os dados desse registro.</p>
+          `)
+      }
+    })
+  }
+
+  function getClientes() {
+    const tableBody = $('#table-body')
+    tableBody.empty()
+
+    const botaoBuscar = $('#botao-buscar')
+    const loading = $('#loading')
+    const noResults = $('#no-results')
+
+    const razaoSocial = $('#razaoSocial').val()
+    const cnpj = $('#cnpj').val()
+    const status = $('#status').is(":checked")
+
+    botaoBuscar.addClass('removed')
+    loading.removeClass('removed')
+
+    $.ajax({
+      url: razaoSocial && cnpj
+        ? `/Cliente/GetCliente?razaoSocial=${razaoSocial}&cnpj=${cnpj.replaceAll(/\W/g, "")}&status=${status}`
+        : razaoSocial
+          ? `/Cliente/GetCliente?razaoSocial=${razaoSocial}&status=${status}`
+          : `/Cliente/GetCliente?&status=${status}`,
+      type: 'GET',
+      contentType: 'application/json',
+      success: function (clientes) {
+        if (clientes.length > 0) {
+          noResults.addClass('removed')
+        }
+        else {
+          noResults.removeClass('removed')
+        }
+
+        let row = ''
+        $.each(clientes, function (index, cliente) {
+          row += `
+            <tr>
+              <td>
+                ${cliente.razao_social}
+              </td>
+              <td>
+                ${cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5')}
+              </td>
+              <td class="cliente__table_data_fundacao">
+                ${moment(cliente.data_fundacao).format('DD/MM/YYYY')}
+              </td>
+              <td>
+                <div class="cliente__table_capital">
+                  <span>R$</span><span>${cliente.capital.toFixed(2).toString().replace('.', ',').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
+                </div>
+              </td>
+              <td class="cliente__table_status">
+                ${cliente.status_cliente ? 'Ativo' : 'Inativo'}
+              </td>
+              <td class="cliente__table_acao">
+                <div class="button-group">
+                  <div class="col-md-6">
+                    <button class="btn btn-xs" type="button" onclick="location.href='CadastrarEditar/${cliente.id}'">
+                      <span class="material-icons">edit</span>
+                    </button>
+                  </div>
+
+                  <div class="col-md-6" onclick="getClienteById(${cliente.id})">
+                    <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#modal">
+                      <span class="material-icons">delete</span>
+                    </button>
+                </div>
+                </div>
+              </td>
+            </tr>
+            `
+        })
+        tableBody.append(row)
+        botaoBuscar.removeClass('removed')
+        loading.addClass('removed')
+      },
+      error: function (error) {
+        botaoBuscar.removeClass('removed')
+        loading.addClass('removed')
+        alert(error)
+      }
+    })
+  }
+
+  $('document').ready(function () {
+    const tableBody = $('#table-body')
+    $('#cnpj').mask('00.000.000/0000-00')
+
+    $('#buscar-form').on('submit', function (event) {
+      event.preventDefault()
+
+      getClientes()
+    })
+  })
+</script>
+}
