@@ -43,6 +43,7 @@ namespace standBY_prototype.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("razao_social")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("status_cliente")

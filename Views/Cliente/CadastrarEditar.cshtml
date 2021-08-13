@@ -8,7 +8,7 @@
     <input name="id" type="hidden" value="@Model.Id" />
   }
   <div class="form-group has-error">
-    <label for="razaoSocial">Razão social</label>
+    <label class="control-label control-label-required" for="razaoSocial">Razão social</label>
     @if (Model != null)
     {
       <input id="razaoSocial" class="form-control" name="razaoSocial" type="text" placeholder="Empresa S/A"
@@ -20,7 +20,7 @@
     }
   </div>
   <div class="form-group">
-    <label for="cnpj">CNPJ</label>
+    <label class="control-label control-label-required" for="cnpj">CNPJ</label>
     @if (Model != null)
     {
       <input id="cnpj" name="cnpj" type="text" class="form-control" placeholder="00.000.000/0000-00" value="@Model.cnpj"
@@ -33,8 +33,8 @@
     }
   </div>
   <div class="form-group">
-    <label for="data-fundacao">Data de fundação</label>
-    <div class="input-group date" id="datetimepicker">
+    <label class="control-label control-label-required" for="data-fundacao">Data de fundação</label>
+    <div class="input-group" id="datetimepicker">
       @if (Model != null)
       {
         <input id="data-fundacao" class="form-control" name="dataFundacao" type="text" placeholder="DD/MM/YYYY"
@@ -48,7 +48,7 @@
     </div>
   </div>
   <div class="form-group">
-    <label for="capital">Capital R$</label>
+    <label class="control-label control-label-required" for="capital">Capital R$</label>
     @if (Model != null)
     {
       <input id="capital" class="form-control" name="capital" type="text" placeholder="0,00" value="@Model.capital"
@@ -73,10 +73,12 @@
     </label>
   </div>
 
-  <div class="row">
-    <button class="btn btn-default col-md-2" type="button"
+  <p class="required-field-description">Campos obrigatórios</p>
+
+  <div>
+    <button class="btn btn-default col-md-1" type="button"
       onclick="location.href='@Url.Action("Index")'">Cancelar</button>
-    <button class="btn btn-primary col-md-2" type="submit">Salvar</button>
+    <button class="btn bg-navbar text-white col-md-1" type="submit">Salvar</button>
   </div>
 </form>
 

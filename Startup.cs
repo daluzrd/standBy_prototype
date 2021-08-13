@@ -39,7 +39,6 @@ namespace standBY_prototype
     {
       if (env.IsDevelopment())
       {
-        dbContext.Database.EnsureCreated();
         dbContext.Database.Migrate();
 
         app.UseDeveloperExceptionPage();

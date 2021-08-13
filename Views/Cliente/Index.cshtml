@@ -13,7 +13,7 @@
 <section class="container">
   <section class="cliente__header-section">
     <h4>Cliente</h4>
-    <button class="btn btn-primary btn-xs" type="button"
+    <button class="btn bg-navbar btn-xs text-white" type="button"
       onclick="location.href='@Url.Action("CadastrarEditar")'">Cadastrar</button>
   </section>
 
@@ -39,14 +39,13 @@
         </label>
       </div>
 
-      <button id="botao-buscar" class="btn btn-primary col-lg-2 col-md-12" type="submit">Buscar</button>
+      <button id="botao-buscar" class="btn btn-default col-lg-2 col-md-12" type="submit">Buscar</button>
 
       <div id="loading" class="col-lg-2 removed">
         <div class="spinner-border">
           <span class="sr-only">Loading...</span>
         </div>
       </div>
-
     </form>
   </section>
   <section class="cliente__table-section">
@@ -72,7 +71,6 @@
               </td>
               <td>
                 @Regex.Replace(item.cnpj, @"^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*", "$1.$2.$3/$4-$5")
-                @* ${cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5')} *@
               </td>
               <td class="cliente__table_data_fundacao">
                 @item.data_fundacao.ToString("dd/MM/yyyy")
@@ -99,12 +97,12 @@
                   <div class="col-md-6">
                     <button class="btn btn-xs" type="button"
                     onclick="location.href='@Url.Action("CadastrarEditar", new {id = item.Id})'">
-                      <span class="material-icons">edit</span>
+                      <span class="fa fa-edit"></span>
                     </button>
                   </div>
                   <div class="col-md-6" onclick="getClienteById(@item.Id)">
                     <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#modal">
-                      <span class="material-icons">delete</span>
+                      <span class="fa fa-trash"></span>
                     </button>
                   </div>
                 </div>
@@ -197,7 +195,78 @@
     })
   }
 
+  function renderTable(clientes) {
+    const noResults = $('#no-results')
+
+    if (clientes.length > 0) {
+      noResults.addClass('removed')
+    }
+    else {
+      noResults.removeClass('removed')
+    }
+
+    let row = ''
+    $.each(clientes, function (index, cliente) {
+      row += `
+            <tr>
+              <td>
+                ${cliente.razao_social}
+              </td>
+              <td>
+                ${cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5')}
+              </td>
+              <td class="cliente__table_data_fundacao">
+                ${moment(cliente.data_fundacao).format('DD/MM/YYYY')}
+              </td>
+              <td>
+                <div class="cliente__table_capital">
+                  <span>R$</span><span>${cliente.capital.toFixed(2).toString().replace('.', ',').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
+                </div>
+              </td>
+              <td class="cliente__table_status">
+                ${cliente.status_cliente ? 'Ativo' : 'Inativo'}
+              </td>
+              <td class="cliente__table_acao">
+                <div class="button-group">
+                  <div class="col-md-6">
+                    <button class="btn btn-xs" type="button" onclick="location.href='CadastrarEditar/${cliente.id}'">
+                      <span class="fa fa-edit"></span>
+                    </button>
+                  </div>
+
+                  <div class="col-md-6" onclick="getClienteById(${cliente.id})">
+                    <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#modal">
+                      <span class="fa fa-trash"></span>
+                    </button>
+                </div>
+                </div>
+              </td>
+            </tr>
+            `
+    })
+    $('#table-body').append(row)
+  }
+
   function getClientes() {
+    const tableBody = $('#table-body')
+    const noResults = $('#no-results')
+    tableBody.empty()
+
+    $.ajax({
+      url: '/Cliente/GetCliente',
+      type: 'GET',
+      contentType: 'application/json',
+      success: function (clientes) {
+        renderTable(clientes)
+      },
+      error: function (error) {
+        noResults.removeClass('removed')
+        alert(error)
+      }
+    })
+  }
+
+  function handleSubmit() {
     const tableBody = $('#table-body')
     tableBody.empty()
 
@@ -221,59 +290,14 @@
       type: 'GET',
       contentType: 'application/json',
       success: function (clientes) {
-        if (clientes.length > 0) {
-          noResults.addClass('removed')
-        }
-        else {
-          noResults.removeClass('removed')
-        }
-
-        let row = ''
-        $.each(clientes, function (index, cliente) {
-          row += `
-            <tr>
-              <td>
-                ${cliente.razao_social}
-              </td>
-              <td>
-                ${cliente.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5')}
-              </td>
-              <td class="cliente__table_data_fundacao">
-                ${moment(cliente.data_fundacao).format('DD/MM/YYYY')}
-              </td>
-              <td>
-                <div class="cliente__table_capital">
-                  <span>R$</span><span>${cliente.capital.toFixed(2).toString().replace('.', ',').replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1.")}</span>
-                </div>
-              </td>
-              <td class="cliente__table_status">
-                ${cliente.status_cliente ? 'Ativo' : 'Inativo'}
-              </td>
-              <td class="cliente__table_acao">
-                <div class="button-group">
-                  <div class="col-md-6">
-                    <button class="btn btn-xs" type="button" onclick="location.href='CadastrarEditar/${cliente.id}'">
-                      <span class="material-icons">edit</span>
-                    </button>
-                  </div>
-
-                  <div class="col-md-6" onclick="getClienteById(${cliente.id})">
-                    <button class="btn btn-xs" type="button" data-toggle="modal" data-target="#modal">
-                      <span class="material-icons">delete</span>
-                    </button>
-                </div>
-                </div>
-              </td>
-            </tr>
-            `
-        })
-        tableBody.append(row)
+        renderTable(clientes)
         botaoBuscar.removeClass('removed')
         loading.addClass('removed')
       },
       error: function (error) {
         botaoBuscar.removeClass('removed')
         loading.addClass('removed')
+        noResults.removeClass('removed')
         alert(error)
       }
     })
@@ -286,7 +310,7 @@
     $('#buscar-form').on('submit', function (event) {
       event.preventDefault()
 
-      getClientes()
+      handleSubmit()
     })
   })
 </script>

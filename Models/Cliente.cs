@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using FluentValidation;
 using standBY_prototype.Common;
 
@@ -12,6 +13,8 @@ namespace standBY_prototype.Models
     public string razao_social { get; set; }
     public string cnpj { get; set; }
     public DateTime data_fundacao { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
     public Decimal capital { get; set; }
     public bool quarentena { get; set; }
     public bool status_cliente { get; set; }
